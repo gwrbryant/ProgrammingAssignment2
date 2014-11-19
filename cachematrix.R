@@ -15,6 +15,11 @@
 ## contained within makeCacheMatrix are available in the environment that 
 ## first calls it. Note that makeCacheMatrix only sets up the functions
 ##  - it does not do any of the actual calculations 
+## The 4 functions are:
+## "set" sets the value of the matrix
+## "get" gets the value of the matrix
+## "setinverse" sets the value of the matrix inverse
+## "getinverse" gets the value of the matrix inverse
 
 makeCacheMatrix <- function(x = matrix()) {
 
