@@ -1,44 +1,52 @@
-## The two functions below are used to create an object that is used to store a numeric matrix and cache its inverse
+## The two functions below are used to create an object that is used to store   
+## a numeric matrix and cache its inverse.
 ## This could be useful when the inverse is required multiple times
 
-## There are 3 different environments involved in implementing these two functions. Using a family tree analogy these are:
-##	Parent: The environment in which both functions are called (eg. the global environment)
-##	Child: The makeCacheMatrix environment (note that the cacheSolve environment is a different Child of the same Parent)
-##	Grandchild: The environments of the functions defined in the makeCacheMatrix environment: set, get, setinverse and getinverse 
+## There are 3 different environments involved  
+## Using a family tree analogy these are:
+##    Parent: The environment in which both functions are called (eg. global)
+##    Child: The makeCacheMatrix environment
+##           (the cacheSolve environment is a different Child but same Parent)
+##    Grandchild: That of the functions defined in the Child environment: 
+##                set, get, setinverse and getinverse 
 
-## This first function (makeCacheMatrix) provides a set of 4 functions that can be used to store or retrieve the matrix and its inverse
-## The functions contained within makeCacheMatrix are available in the environment that first calls it
-## Note that makeCacheMatrix only sets up the functions - it does not do any of the actual calculations 
+## This first function (makeCacheMatrix) provides a set of 4 functions that  
+## can be used to store or retrieve the matrix and its inverse. The functions
+## contained within makeCacheMatrix are available in the environment that 
+## first calls it. Note that makeCacheMatrix only sets up the functions
+##  - it does not do any of the actual calculations 
 
 makeCacheMatrix <- function(x = matrix()) {
-						
-    i <- NULL             ## "i" is a variable in the Child environment that is used to store the matrix inverse	
-    set <- function(y) {  ## "set" is used to change the matrix being manipulated in the Child environment  
-        x <<- y           ## there is no x variable this environment; "<<-" sets the value of the matrix in the Child envionment  
-        i <<- NULL        ## we also need to initialise (to NULL) the inverse cached in the Child environment
+
+    i <- NULL    ## a variable in the Child environment used for the inverse             
+    set <- function(y) {    ## change the matrix being manipulated
+        x <<- y    ## "<<-" sets the value of x in the Child envionment  
+        i <<- NULL    ## initialise (to NULL) any existing cached inverse
     }
-    get <- function() x   ## "get" outputs the matrix that has/will have its inverse cached
-    setinverse <- function(inverse) i <<- inverse    ## "setinverse" stores the matrix inverse in its cache - variable i in the Child environment 
-    getinverse <- function() i                       ## "getinverse" retrieves the matrix inverse from its cache - variable i in Child environment
-    list(set = set, get = get,                       ## the function names are now placed in a list so that they can be accessed in the Parent 
-         setinverse = setinverse,                    ## environment or by other functions called in the Parent environment
-         getinverse = getinverse)
+    get <- function() x   ## output the matrix being manipulated
+    setinverse <- function(inverse) i <<- inverse    ## cache the inverse in i
+    getinverse <- function() i    ## retrieve the inverse from its cache (i)
+    list(set = set, get = get,    ## place the function names in a list 
+         setinverse = setinverse,    ## so they can be accessed in/from  
+         getinverse = getinverse)    ## the Parent environment 
 }
 
 
-## This second function (cacheSolve) provides the inverse of the matrix that is passed to it as its argument
-## It either returns the cached inverse, or, if this doesn't exist, it calculates the inverse and caches it for later use.
-## cacheSolve use the functions established by makeCacheMatrix, and caches the inverse in a variable (i) found in makeCacheMatrix's (i.e. Child) environment 
+## This second function (cacheSolve) provides the inverse of the matrix 
+## that is passed as its argument; It either returns the cached inverse, 
+## or, if this doesn't exist, it calculates the inverse and caches it.
+## cacheSolve use the functions established by makeCacheMatrix,and caches 
+## the inverse in the variable (i) in the Child environment defined above.
 
 cacheSolve <- function(x, ...) {
         
-        i <- x$getinverse()                   ## call "getinverse" in the Child environment and assign it to a local variable 
-        if(!is.null(i)) {                     ## if the inverse already exists then just return it
-            message("getting cached data")
-            return(i)
+        i <- x$getinverse()    ## get the inverse from the Child environment 
+        if(!is.null(i)) {    ## if the inverse already exists 
+            message("getting cached data")    ## tell us and
+            return(i)    ## then just return it to the calling environment
         }
-        data <- x$get()                       ## otherwise, make the local variable 'data' equal to the matrix in the Child environment 				
-        i <- solve(data, ...)                 ## now calculate the inverse of the matrix
-        x$setinverse(i)	                      ## and cache the inverse in the Child envrionment by calling setinverse
-        i                                     ## finally, output the inverse to the console
+        data <- x$get()    ## otherwise, make a local copy of the matrix, 				
+        i <- solve(data, ...)    ## calculate its inverse, 
+        x$setinverse(i)    ## and cache the inverse in the Child environment
+        i    ## finally, output the inverse to the console
 }
